@@ -1,0 +1,46 @@
+services:
+  client:
+    image: python:3.13.3
+    volumes:
+      - .:/usr/src/app
+    working_dir: /usr/src/app
+    depends_on:
+      - proxy-local
+    networks:
+      grpc-net:
+        ipv4_address: 172.19.0.2 
+    command: sleep infinity 
+
+  proxy-local:
+    image: nginx:alpine
+    volumes:
+      - ./proxy-local/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      grpc-net:
+        ipv4_address: 172.19.0.3
+
+  proxy:
+    image: nginx:alpine
+    volumes:
+      - ./proxy/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      grpc-net:
+        ipv4_address: 172.19.0.4
+
+  server:
+    image: python:3.13.3
+    volumes:
+      - .:/usr/src/app
+    working_dir: /usr/src/app
+    networks:
+      grpc-net:
+        ipv4_address: 172.19.0.5
+    command: sleep infinity
+
+networks:
+  grpc-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.19.0.0/16
+          gateway: 172.19.0.1
